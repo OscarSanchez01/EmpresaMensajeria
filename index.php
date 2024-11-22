@@ -11,6 +11,27 @@
 
 <body>
 
+<?php
+
+function conexionBD() {
+    global $pdo;
+    try {
+        $pdo = new PDO('mysql:host=localhost;dbname=sistemaenvios', 'paquetes', '');
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $pdo->exec('SET NAMES "utf8"');
+
+        echo "Conexión establecida";
+    } catch (PDOException $e) {
+        echo "Error en la conexión";
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $user = $_POST['username'];
+    $pass = $_POST['password'];
+}
+
+?>
     <form class="form" action="index.php" method="POST">
         <!-- NOMBRE -->
         <div class="flex-column">
@@ -36,6 +57,59 @@
     
         <p class="p">¿No tienes una cuenta? <span class="span">Registrate</span></p>
     </form>
+
+
+    <?php
+    conexionBD();
+    $query = "SELECT * FROM USUARIOS";
+$stmt = $pdo->prepare($query);
+$stmt->execute();
+$resultado = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// foreach ($resultado as $fila) {
+//     echo "Usuario: " . $fila['username'] . ", Rol: " . $fila['rol'] . "<br>";
+// }
+
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $user = $_POST['username'];
+    $pass = $_POST['password'];
+
+    // Inicia conexión
+    conexionBD();
+
+    // Verifica usuario y contraseña
+    $query = "SELECT * FROM USUARIOS WHERE username = :username AND password = :password";
+    $stmt = $pdo->prepare($query);
+    $stmt->bindParam(':username', $user);
+    $stmt->bindParam(':password', $pass);
+    $stmt->execute();
+    
+
+
+    if ($stmt->rowCount() > 0) {
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+         if ($row['rol'] == 'A') {
+            header("Location: panel_admin.html");
+
+        } else {
+            header("Location: panel.html");
+        }
+        exit;
+    } else {
+
+        echo "<p style='color:red;'>Usuario o contraseña incorrectos.</p>";
+    }
+}
+
+    ?>
+
+ 
+
+    
+
+
 
 </body>
 
