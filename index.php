@@ -12,6 +12,7 @@
 <body>
 
 <?php
+    session_start();
 
 function conexionBD() {
     global $pdo;
@@ -26,10 +27,10 @@ function conexionBD() {
     }
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $user = $_POST['username'];
-    $pass = $_POST['password'];
-}
+// if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+//     $user = $_POST['username'];
+//     $pass = $_POST['password'];
+// }
 
 ?>
     <form class="form" action="index.php" method="POST">
@@ -89,23 +90,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($stmt->rowCount() > 0) {
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-         if ($row['rol'] == 'A') {
-            header("Location: panel_admin.html");
+            
+            // $_SESSION['username'] = $user;   ALMACENAMOS LOS DATOS DEL USUARIO
+            $_SESSION['username'] = $row['username'];
+            // $_SESSION['address'] = $row['direccion'];
+            // $_SESSION['email'] = $row['mail'];
+        
+        if ($row['rol'] == 'A') {
+            header("Location: panel_admin.php");
 
         } else {
-            header("Location: panel.html");
+            header("Location: panel.php");
         }
         exit;
     } else {
-
         echo "<p style='color:red;'>Usuario o contraseña incorrectos.</p>";
     }
 }
-
     ?>
-
- 
 
     
 

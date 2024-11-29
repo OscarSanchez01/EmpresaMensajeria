@@ -57,11 +57,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             //Isert
             $query = "INSERT INTO USUARIOS (id_usuario, username, password, rol, mail, direccion) 
-                      VALUES ('$newId', '$user', '$pass', 'R', '$email', '$address')";
+                    VALUES ('$newId', '$user', '$pass', 'R', '$email', '$address')";
             $stmt = $pdo->prepare($query);
 
             if ($stmt->execute()) {
-               
+            
                 header("Location: ./index.php");
                 exit; 
                 echo "<p style='color:red;'>Error al registrar el usuario. Inténtalo de nuevo más tarde.</p>";
