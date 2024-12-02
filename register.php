@@ -1,19 +1,11 @@
-<!DOCTYPE html>
-<html lang="es">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro</title>
-    <link rel="stylesheet" href="./css/login.css">
-    <link rel="stylesheet" href="./assets/remixicon/remixicon.css" />
-</head>
+<?php
+session_start();
+$error = false;
+$msg_err = '';
 
-<body>
-
- <?php
-
-function conexionBD() {
+function conexionBD()
+{
     global $pdo;
     try {
         $pdo = new PDO('mysql:host=localhost;dbname=sistemaenvios', 'paquetes', '');
@@ -24,22 +16,19 @@ function conexionBD() {
     }
 }
 
-conexionBD(); // Inicia la conexión a la base de datos
+conexionBD();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $user = $_POST['username'];
     $pass = $_POST['password'];
     $email = $_POST['email'];
     $address = $_POST['address'];
 
-    // Validar que los campos no estén vacíos
     if (empty($user) || empty($email) || empty($address) || empty($pass)) {
-        echo "<p class='error'>Por favor, completa todos los campos.</p>";
+        $msg_err = 'Completa todos los campos.';
+        $error = true;
     } else {
-        // Validación del formato de email
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            echo "<p class='error'>El correo electrónico no es válido.</p>";
-        } else {
+        try {
             // Verificar si el usuario o email ya existen
             $query = "SELECT * FROM USUARIOS WHERE username = :username OR mail = :email";
             $stmt = $pdo->prepare($query);
@@ -47,78 +36,79 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bindParam(':email', $email);
             $stmt->execute();
 
-            // Verificar si ya existe el usuario o el email
             if ($stmt->rowCount() > 0) {
-                echo "<p class='error'>El usuario o el email ya están registrados.</p>";
+                $msg_err = 'El usuario o el email ya existen. Por favor, elige otro.';
+                $error = true;
             } else {
-                // Cifrar la contraseña
-                $hashedPass = password_hash($pass, PASSWORD_DEFAULT);
+                // Insertar el nuevo usuario con contraseña
+                $hashedPass = password_hash($pass, PASSWORD_BCRYPT);
 
-                // Obtener el siguiente ID de usuario
-                $query = "SELECT MAX(id_usuario) AS max_id FROM USUARIOS";
+                $query = "INSERT INTO USUARIOS (username, password, rol, mail, direccion) 
+                          VALUES (:username, :password, 'R', :email, :address)";
                 $stmt = $pdo->prepare($query);
-                $stmt->execute();
-                $result = $stmt->fetch(PDO::FETCH_ASSOC);
-                $newId = $result['max_id'] ? $result['max_id'] + 1 : 1;
-
-                // Insertar el nuevo usuario
-                $query = "INSERT INTO USUARIOS (id_usuario, username, password, rol, mail, direccion) 
-                        VALUES (:id, :username, :password, 'R', :email, :address)";
-                $stmt = $pdo->prepare($query);
-                $stmt->bindParam(':id', $newId);
                 $stmt->bindParam(':username', $user);
-                $stmt->bindParam(':password', $hashedPass);
+                $stmt->bindParam(':password', $pass);
                 $stmt->bindParam(':email', $email);
                 $stmt->bindParam(':address', $address);
 
                 if ($stmt->execute()) {
-                    // Redirigir a la página de login o éxito
+                    $_SESSION['username'] = $user;
                     header("Location: ./index.php");
-                    exit; 
+                    exit;
                 } else {
-                    echo "<p class='error'>Error al registrar el usuario. Inténtalo de nuevo más tarde.</p>";
+                    $msg_err = 'Error en la inserción, por favor intenta más tarde.';
+                    $error = true;
                 }
             }
+        } catch (PDOException $e) {
+            $msg_err = 'Error: ' . $e->getMessage();
+            $error = true;
         }
     }
 }
+?>
 
-?> 
-
-    <!-- Formulario de registro -->
-
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro</title>
+    <link rel="stylesheet" href="./css/login.css">
+    <link rel="stylesheet" href="./assets/remixicon/remixicon.css" />
+</head>
+<body>
     <div class="page">
         <div class="container">
-          <div class="left">
-            <div class="login">Register</div>
-            <div class="eula">
-
-                ¿Ya tienes una cuenta? 
-                <p><a href= "./index.php" class="span">Inicia sesión</a></p>
-            
+            <div class="left">
+                <div class="login">Registro</div>
+                <div class="eula">
+                    ¿Ya tienes una cuenta?
+                    <p><a href="./index.php" class="span">Inicia sesión</a></p>
+                </div>
             </div>
-          </div>
-          <div class="right">
-            <div class="form">
-              <label for="username" >Nombre de Usuario</label>
-              <input type="text" name="username" id="username"  placeholder="Nuevo usuario" required />
+            <div class="right">
+                <form class="form" method="POST">
+                    <label for="username">Nombre de Usuario</label>
+                    <input type="text" name="username" id="username" placeholder="Nuevo usuario"  />
 
-              <label for="email">Correo Electrónico</label>
-              <input type="text" name="email" id="email"  placeholder="Introduce tu email" required />
+                    <label for="email">Correo Electrónico</label>
+                    <input type="text" name="email" id="email" placeholder="Introduce tu email"  />
 
-              <label for="address" >Dirección</label>
-              <input type="text" name="address" id="address" placeholder="Introduce tu Dirección" required />
+                    <label for="address">Dirección</label>
+                    <input type="text" name="address" id="address" placeholder="Introduce tu Dirección"  />
 
-              <label for="password">Contraseña</label>
-              <input type="password" name="password" id="password" placeholder="Introduce tu contraseña" required />
+                    <label for="password">Contraseña</label>
+                    <input type="password" name="password" id="password" placeholder="Introduce tu contraseña"  />
 
-              <button class="button-submit" name="submit" type="submit">Registar</button>
+                    <?php if ($error && $msg_err): ?>
+                        <p style="color: red"><?= $msg_err; ?></p>
+                    <?php endif; ?>
+
+                    <button class="button-submit" type="submit">Registrar</button>
+                </form>
             </div>
-          </div>
         </div>
-      </div>
-
-  
+    </div>
 </body>
-
 </html>
