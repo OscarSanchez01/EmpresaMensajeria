@@ -1,0 +1,155 @@
+@font-face {
+    font-family: font;
+    src: url("../assets/fonts/qlarendon\ bold.otf");
+}
+
+
+/* Estilos generales */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container{
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.header{
+    height: 70px;
+    /* border: 1px solid pink; */
+    padding: 10px;
+    position: sticky;
+    top: 0;
+    background-color: #4fbbb0;
+}
+
+.subcontainer{
+    display: flex;
+    justify-content: space-between;
+    border: 2px solid #4fbbb0;
+}
+.aside{
+    width: 20%;
+    background-image: url("../assets/bg2.jpg");
+    background-position: center;
+    background-size: contain;
+    border-right: 2px solid #4fbbb0;
+    color: #59453C;
+
+    height:700px;
+    
+    
+
+}
+
+.info{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 2px solid #4fbbb0;
+}
+
+
+.content{
+    width: 80%;
+    background-image: url("../assets/bg.png");
+
+}
+
+/* perfil.php */
+/* Contenedor del perfil */
+.profile-container {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 450px;
+    box-sizing: border-box;
+}
+
+/* Título de la sección de perfil */
+.profile-title {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Estilo de los grupos de formulario */
+.form-group {
+    margin-bottom: 20px;
+}
+
+/* Etiquetas de los campos de entrada */
+.input-label {
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+    display: block;
+}
+
+/* Campos de entrada */
+.input-field {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.input-field:focus {
+    border-color: #007bff;
+}
+
+/* Botón de envío */
+.submit-button {
+    background-color: #007bff;
+    color: #ffffff;
+    font-size: 16px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    text-align: center;
+}
+
+.submit-button:hover {
+    background-color: #0056b3;
+}
+
+/* Contenedor de enlace de retroceso */
+.link-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.back-link {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+/* Mensajes de éxito o error */
+.success-message, .error-message {
+    text-align: center;
+    color: green;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.error-message {
+    color: red;
+}
