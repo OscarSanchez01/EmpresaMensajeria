@@ -1,16 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="./css/logins.css">
-    <link rel="stylesheet" href="./assets/remixicon/remixicon.css" />
-</head>
-
-<body>
-    <?php
+<?php
     session_start();
 
     function conexionBD()
@@ -28,10 +18,8 @@
     conexionBD();
     $query = 'SELECT mail, direccion FROM USUARIOS WHERE username = :username';
     $stmt = $pdo->prepare($query);
-    //hay que igualar, si no no funciona
     $stmt->bindParam(':username', $_SESSION['username'], PDO::PARAM_STR);
     $stmt->execute();
-
 
     if ($stmt->rowCount() > 0) {
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -40,7 +28,6 @@
     } else {
         echo "No se encontró información para el usuario.";
     }
-
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {   
         // Actualizar username 
@@ -59,7 +46,7 @@
             }
         }
     
-        // Actualizar email si 
+        // Actualizar email 
         if (isset($_POST['email']) && !empty($_POST['email'])) {
             $query = 'UPDATE USUARIOS SET mail = :new_email WHERE username = :current_username';
             $stmt = $pdo->prepare($query);
@@ -84,8 +71,13 @@
             $stmt->execute();
     
             if ($stmt->rowCount() > 0) {
-                $_SESSION['address'] = $_POST['address']; // Actualizar sesión
+                /* if($_POST['password'] == $_SESSION['password']){ */
+
+                    $_SESSION['username'] = $_POST['username']; // Actualizar sesión
+                    
                 echo "La dirección se ha actualizado correctamente.<br>";
+                /* } */
+                
             } else {
                 echo "No se realizaron cambios en la dirección.<br>";
             }
@@ -94,32 +86,51 @@
 
     ?>
 
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil del Usuario</title>
+    <link rel="stylesheet" href="./css/profile.css">
+
+</head>
+
+<body>
     <div class="container">
-        <h2>Perfil</h2>
+        <h2>Perfil del Usuario</h2>
+
+        <div class="profile-picture">
+            <img src="./assets/profile/OIP.jpg" alt="Foto de perfil" id="profile-pic">
+        </div>
+
         <form method="POST" action="perfil.php">
             <div class="form-group">
-                <label for="username">Usuario</label>
-                <input type="text" id="username" name="username" placeholder="<?php echo $_SESSION['username']; ?>" ><br>
+                <label for="name">Nombre</label>
+                <input type="text" id="name" name="username" placeholder="<?php echo $_SESSION['username']; ?>" >
             </div>
 
             <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" placeholder=" <?php echo $_SESSION['mail']; ?>" ><br>
+                <label for="email">Correo Electrónico</label>
+                <input type="email" id="email" name="email" placeholder="<?php echo $_SESSION['mail']; ?>">
             </div>
 
             <div class="form-group">
-                <label for="address">Dirección</label>
-                <input type="text" id="address" name="address" placeholder="<?php echo $_SESSION['address']; ?>" ><br>
+                <label for="password">Dirección</label>
+                <input type="text" id="address" name="address" placeholder="<?php echo $_SESSION['address']; ?>">
             </div>
 
             <div class="form-group">
-                <button type="submit">Actualizar Perfil</button>
+                <label for="password">Confirma cambios con tu contraseña</label>
+                <input type="password" id="password" name="password" placeholder="Escribe tu contraseña">
+            </div>
+
+
+
+            <div class="buttons">
+                <button type="submit" class="save-btn">Guardar</button>
+                <a href="./panel.php" class="back-link">Volver</a>
             </div>
         </form>
-
-        <div class="link-container">
-            <p><a href="panel.php">Volver al Panel</a></p>
-        </div>
     </div>
 </body>
 

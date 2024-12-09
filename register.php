@@ -1,19 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="./css/logins.css">
-    <link rel="stylesheet" href="./assets/remixicon/remixicon.css" />
-</head>
-
-<body>
 
 <?php
+session_start();
+$error = false;
+$msg_err = '';
 
-function conexionBD() {
+function conexionBD()
+{
     global $pdo;
     try {
         $pdo = new PDO('mysql:host=localhost;dbname=sistemaenvios', 'paquetes', '');
@@ -24,116 +16,102 @@ function conexionBD() {
     }
 }
 
-conexionBD(); // Inicia la conexión a la base de datos
+conexionBD();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $user = $_POST['username'];
     $pass = $_POST['password'];
     $email = $_POST['email'];
     $address = $_POST['address'];
 
-    // Validar que los campos no estén vacíos
-    if (!$user || !$email || !$address || !$pass) {
-        echo "<p style='color:red;'>Por favor, completa todos los campos.</p>";
+    //guardamos el username
+    $_SESSION['username'] = $_POST['username'];
+
+    if (empty($user) || empty($email) || empty($address) || empty($pass)) {
+        $msg_err = 'Completa todos los campos.';
+        $error = true;
     } else {
-        // Verificar si el usuario o email ya existen
-        $query = "SELECT * FROM USUARIOS WHERE username = '$user' OR mail = '$email'";
-        $stmt = $pdo->prepare($query);
-        $stmt->execute();
-
-        // Verificar si ya existe el usuario o el email
-        if ($stmt->rowCount() > 0) {
-            echo "<p style='color:red;'>El usuario o el email ya están registrados.</p>";
-        } else {
-
-            // Id usuario
-            $query = "SELECT MAX(id_usuario) AS max_id FROM USUARIOS";
+        try {
+            // Verificar si el usuario o email ya existen
+            $query = "SELECT * FROM USUARIOS WHERE username = :username OR mail = :email";
             $stmt = $pdo->prepare($query);
+            $stmt->bindParam(':username', $user);
+            $stmt->bindParam(':email', $email);
             $stmt->execute();
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            
-            $newId = $result['max_id'] ? $result['max_id'] + 1 : 1;
 
+            if ($stmt->rowCount() > 0) {
+                $msg_err = 'El usuario o el email ya existen. Por favor, elige otro.';
+                $error = true;
+            } else {
+                // Insertar el nuevo usuario con contraseña
+                $hashedPass = password_hash($pass, PASSWORD_BCRYPT);
 
-            //Isert
-            $query = "INSERT INTO USUARIOS (id_usuario, username, password, rol, mail, direccion) 
-                    VALUES ('$newId', '$user', '$pass', 'R', '$email', '$address')";
-            $stmt = $pdo->prepare($query);
+                $query = "INSERT INTO USUARIOS (username, password, rol, mail, direccion) 
+                          VALUES (:username, :password, 'R', :email, :address)";
+                $stmt = $pdo->prepare($query);
+                $stmt->bindParam(':username', $user);
+                $stmt->bindParam(':password', $pass);
+                $stmt->bindParam(':email', $email);
+                $stmt->bindParam(':address', $address);
 
-            if ($stmt->execute()) {
-            
-                header("Location: ./index.php");
-                exit; 
-                echo "<p style='color:red;'>Error al registrar el usuario. Inténtalo de nuevo más tarde.</p>";
+                if ($stmt->execute()) {
+                    
+                    header("Location: ./index.php");
+                    exit;
+                } else {
+                    $msg_err = 'Error en la inserción, por favor intenta más tarde.';
+                    $error = true;
+                }
             }
+        } catch (PDOException $e) {
+            $msg_err = 'Error: ' . $e->getMessage();
+            $error = true;
         }
     }
 }
-
 ?>
-    <!-- AQUI ESTA EL FORM -->
-    <form class="form" action="register.php" method="POST">
-        
-        
-        <!-- NOMBRE -->
-        <div class="flex-column">
-            <label>Name </label>
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro</title>
+    <link rel="stylesheet" href="./css/login.css">
+    <link rel="stylesheet" href="./assets/remixicon/remixicon.css" />
+</head>
+<body>
+    <div class="page">
+        <div class="container">
+            <div class="left">
+                <div class="login">Registro</div>
+                <div class="eula">
+                    ¿Ya tienes una cuenta?
+                    <p><a href="./index.php" class="span">Inicia sesión</a></p>
+                </div>
+            </div>
+            <div class="right">
+                <form class="form" method="POST">
+                    <label for="username">Nombre de Usuario</label>
+                    <input type="text" name="username" id="username" placeholder="Nuevo usuario"  />
+
+                    <label for="email">Correo Electrónico</label>
+                    <input type="text" name="email" id="email" placeholder="Introduce tu email"  />
+
+                    <label for="address">Dirección</label>
+                    <input type="text" name="address" id="address" placeholder="Introduce tu Dirección"  />
+
+                    <label for="password">Contraseña</label>
+                    <input type="password" name="password" id="password" placeholder="Introduce tu contraseña"  />
+
+                    <?php if ($error && $msg_err){ ?>
+                        <p style="color: red"><?= $msg_err; ?></p>
+                    <?php } ?>
+
+                    <button class="button-submit" type="submit">Registrar</button>
+                </form>
+            </div>
         </div>
-        <div class="inputForm">
-            <i class="ri-user-5-fill"></i>
-
-            <!-- INPUT NOMBRE -->
-            <input type="text" name="username" class="input" placeholder="Nuevo usuario" />
-        </div>
-
-
-        <!-- EMAIL -->
-        <div class="flex-column">
-            <label>Email </label>
-        </div>
-        <div class="inputForm">
-            <i class="ri-mail-fill"></i>
-            <!-- INPUT EMAIL -->
-            <input type="text" class="input" name="email" placeholder="Introduce tu email" />
-        </div>
-
-
-        <!-- DIRECCIÓN -->
-        <div class="flex-column">
-            <label>Dirección </label>
-        </div>
-        <div class="inputForm">
-            <i class="ri-compass-3-fill"></i>
-            <!-- INPUT DIRECCIÓN -->
-            <input type="text" class="input" name="address" placeholder="Introduce tu Dirección" />
-        </div>
-
-
-
-
-        <!-- CONTRASEÑA -->
-        <div class="flex-column">
-            <label>Password </label>
-        </div>
-        <div class="inputForm">
-            <i class="ri-lock-2-fill"></i>
-            <!-- INPUT CONTRASEÑA -->
-            <input type="password" class="input" name="password" placeholder="Introduce tu contraseña" />
-        </div>
-
-        <button class="button-submit">Sign Up</button>
-
-        <p class="p">¿Tienes una cuenta? <a href="./index.php" class="span">Inicia sesion</a></p>
-
-    </form>
-
-    <?php
-
-
-    ?>
-
-
-
+    </div>
 </body>
-
 </html>
