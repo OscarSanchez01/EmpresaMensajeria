@@ -1,4 +1,3 @@
-
 <?php
 session_start();
 $error = false;
@@ -55,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $stmt->bindParam(':address', $address);
 
                 if ($stmt->execute()) {
-                    
+
                     header("Location: ./index.php");
                     exit;
                 } else {
@@ -73,6 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -80,6 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link rel="stylesheet" href="./css/login.css">
     <link rel="stylesheet" href="./assets/remixicon/remixicon.css" />
 </head>
+
 <body>
     <div class="page">
         <div class="container">
@@ -93,18 +94,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="right">
                 <form class="form" method="POST">
                     <label for="username">Nombre de Usuario</label>
-                    <input type="text" name="username" id="username" placeholder="Nuevo usuario"  />
+                    <input type="text" name="username" id="username" placeholder="Nuevo usuario" />
 
                     <label for="email">Correo Electrónico</label>
-                    <input type="text" name="email" id="email" placeholder="Introduce tu email"  />
+                    <input type="text" name="email" id="email" placeholder="Introduce tu email" />
 
                     <label for="address">Dirección</label>
-                    <input type="text" name="address" id="address" placeholder="Introduce tu Dirección"  />
+                    <input type="text" name="address" id="address" placeholder="Introduce tu Dirección" />
 
                     <label for="password">Contraseña</label>
-                    <input type="password" name="password" id="password" placeholder="Introduce tu contraseña"  />
+                    <input type="password" name="password" id="password" placeholder="Introduce tu contraseña" />
 
-                    <?php if ($error && $msg_err){ ?>
+                    <?php if ($error && $msg_err) { ?>
                         <p style="color: red"><?= $msg_err; ?></p>
                     <?php } ?>
 
@@ -114,4 +115,5 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
     </div>
 </body>
+
 </html>

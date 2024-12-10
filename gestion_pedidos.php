@@ -35,48 +35,45 @@ function conexionBD()
         <div class="subcontainer">
             <aside class="aside">
                 <div class="info">
-                    <img src="./assets/profile/OIP.jpg" alt="Admin Icon" width="100px">
+                    <img src="./assets/profile/admin.png" alt="Admin Icon" width="100px">
                     <div class="info_user">
-                        <?php
-                        echo "<p>¡Bienvenido, " . $_SESSION['username'] . "!</p> ";
-                        ?>
-                        <p class="role">Usuario</p>
+                        <p>Bienvenido,
+
+                            Paco</p>
+                        <p class="role">Administrador</p>
                     </div>
 
                 </div>
 
                 <div class="info_select">
                     <ul>
-                        <li><a href="#">Gestión de Pedidos</a></li>
-                        <li><a href="./perfil.php">Perfil</a></li>
+                        <li><a href="./panel_admin.php">Panel de Control</a></li>
+                        <li><a href="./gestion_pedidos.php">Gestión de Pedidos</a></li>
+                        <li><a href="#">Usuarios</a>
+                            <ul class="submenu">
+                                <li><a href="#">Lista de Usuarios</a></li>
+                                <li><a href="#">Añadir Nuevo Usuario</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="#">Configuraciones</a></li>
                         <li><a href="./logout.php">Cerrar Sesión</a></li>
                     </ul>
                 </div>
             </aside>
 
             <div class="content">
-                <h2>Panel de Control del usuario</h2>
+                <h2>Gestion de pedidos</h2>
                 <p>Desde aquí puedes gestionar todos tus paquetes de Toom Nook's Delivery.</p>
 
-                <div class="stats-container">
+                <div style="margin-bottom: 50px;" class="stats-container">
                     <div class="stats-card">
                         <h3>Total Pedidos</h3>
-                        <p>
-                            <?php
+                        <p><?php
                             conexionBD();
-                            $stmt = $pdo->prepare("SELECT id_usuario FROM usuarios WHERE username = :username");
-                            $stmt->bindParam(':username', $_SESSION['username']);
-                            $stmt->execute();
-                            $id_usuario = $stmt->fetch();
-                            $id_usuario = $id_usuario['id_usuario'];
-
-                            $stmt = $pdo->prepare("SELECT COUNT(*) as user_pedidos FROM envios WHERE id_usuario = :id_usuario");
-                            $stmt->bindParam(':id_usuario', $id_usuario);
+                            $stmt = $pdo->prepare("SELECT COUNT(*) as total_pedidos FROM envios");
                             $stmt->execute();
                             $total_pedidos = $stmt->fetch();
-                            echo $total_pedidos['user_pedidos'];
-                            ?>
-                        </p>
+                            echo $total_pedidos['total_pedidos']; ?></p>
                     </div>
                 </div>
                 <table class="table table-striped table-bordered">
@@ -89,14 +86,7 @@ function conexionBD()
                     </tr>
                     <?php
                     conexionBD();
-                    $stmt = $pdo->prepare("SELECT id_usuario FROM usuarios WHERE username = :username");
-                    $stmt->bindParam(':username', $_SESSION['username']);
-                    $stmt->execute();
-                    $id_usuario = $stmt->fetch();
-                    $id_usuario = $id_usuario['id_usuario'];
-
-                    $stmt = $pdo->prepare("SELECT * FROM envios WHERE id_usuario = :id_usuario");
-                    $stmt->bindParam(':id_usuario', $id_usuario);
+                    $stmt = $pdo->prepare("SELECT * FROM envios");
                     $stmt->execute();
                     $envios = $stmt->fetchAll();
                     foreach ($envios as $envio) {
@@ -119,9 +109,9 @@ function conexionBD()
                     }
                     ?>
                 </table>
+
             </div>
         </div>
-    </div>
     </div>
 </body>
 
@@ -130,7 +120,6 @@ function conexionBD()
         width: 100%;
         border-collapse: collapse;
         margin-bottom: 20px;
-        margin-top: 20px;
     }
 
     .table-striped {

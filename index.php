@@ -1,65 +1,66 @@
 <?php
-    session_start();
-    $msg_err = "";
+session_start();
+$msg_err = "";
 
-    // Crear el token
-    if (!isset($_SESSION['token'])) {
-        $hora = date('H:i');
-        $session_id = session_id();
-        $token = hash('sha256', $hora . $session_id);
-        $_SESSION['token'] = $token;
+// Crear el token
+if (!isset($_SESSION['token'])) {
+    $hora = date('H:i');
+    $session_id = session_id();
+    $token = hash('sha256', $hora . $session_id);
+    $_SESSION['token'] = $token;
+}
+
+// Conexión a la base de datos
+function conexionBD()
+{
+    global $pdo;
+    try {
+        $pdo = new PDO('mysql:host=localhost;dbname=sistemaenvios', 'paquetes', '');
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $pdo->exec('SET NAMES "utf8"');
+    } catch (PDOException $e) {
+        echo "Error en la conexión";
+        exit();
     }
+}
 
-    // Conexión a la base de datos
-    function conexionBD() {
-        global $pdo;
-        try {
-            $pdo = new PDO('mysql:host=localhost;dbname=sistemaenvios', 'paquetes', '');
-            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $pdo->exec('SET NAMES "utf8"');
-        } catch (PDOException $e) {
-            echo "Error en la conexión";
-            exit();
-        }
-    }
+// Procesar formulario
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $user = $_POST['username'];
+    $pass = $_POST['password'];
+    $token = $_POST['token'];
 
-    // Procesar formulario
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $user = $_POST['username'];
-        $pass = $_POST['password'];
-        $token = $_POST['token'];
+    if ($_SESSION['token'] !== $token) {
+        $msg_err = 'Intento de entrada sin token';
+    } else {
+        // Iniciar conexión
+        conexionBD();
 
-        if ($_SESSION['token'] !== $token) {
-            $msg_err = 'Intento de entrada sin token';
-        } else {
-            // Iniciar conexión
-            conexionBD();
+        // Verificar usuario y contraseña
+        $query = "SELECT * FROM USUARIOS WHERE username = :username AND password = :password";
+        $stmt = $pdo->prepare($query);
+        $stmt->bindParam(':username', $user);
+        $stmt->bindParam(':password', $pass);
+        $stmt->execute();
 
-            // Verificar usuario y contraseña
-            $query = "SELECT * FROM USUARIOS WHERE username = :username AND password = :password";
-            $stmt = $pdo->prepare($query);
-            $stmt->bindParam(':username', $user);
-            $stmt->bindParam(':password', $pass);
-            $stmt->execute();
+        if ($stmt->rowCount() > 0) {
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            $_SESSION['username'] = $row['username'];
 
-            if ($stmt->rowCount() > 0) {
-                $row = $stmt->fetch(PDO::FETCH_ASSOC);
-                $_SESSION['username'] = $row['username'];
-                
-                /* //guardamos la contraseña */
-                $_SESSION['password'] = $_POST['password'];
+            /* guardamos la contraseña para luego usarla en editar perfil*/
+            $_SESSION['password'] = $_POST['password'];
 
-                if ($row['rol'] == 'A') {
-                    header("Location: panel_admin.php");
-                } else {
-                    header("Location: panel.php");
-                }
-                exit;
+            if ($row['rol'] == 'admin') {
+                header("Location: panel_admin.php");
             } else {
-                $msg_err = 'Usuario o contraseña incorrectos';
+                header("Location: panel.php");
             }
+            exit;
+        } else {
+            $msg_err = 'Usuario o contraseña incorrectos';
         }
     }
+}
 ?>
 
 <!DOCTYPE html>
@@ -86,7 +87,14 @@
             <div class="right">
                 <form class="form" action="index.php" method="POST">
                     <label for="username">Usuario</label>
-                    <input type="text" name="username" id="email" required>
+                    <input type="text" name="username" id="email"
+                        value="<?php
+                                if (isset($_POST['username'])) {
+                                    echo $_POST['username'];
+                                }
+
+                                ?>"
+                        required>
 
                     <label for="password">Contraseña</label>
                     <input type="password" name="password" id="password" required>
